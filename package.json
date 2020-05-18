@@ -1,0 +1,25 @@
+{
+  "name": "extract-rdf-from-remote-service",
+  "version": "0.0.1",
+  "description": "Extracts RDF from a remote source and returns it",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lblod/extract-rdf-from-remote-service.git"
+  },
+  "keywords": [
+    "mu-service"
+  ],
+  "author": "Aad Versteden <aad.versteden@redpencil.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lblod/extract-rdf-from-remote-service/issues"
+  },
+  "homepage": "https://github.com/lblod/extract-rdf-from-remote-service#readme",
+  "dependencies": {
+    "rdf-dereference": "^1.5.0"
+  }
+}
