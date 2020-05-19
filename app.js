@@ -149,6 +149,7 @@ app.get('/business', async function( req, res ) {
   try {
     const URL = req.query.url;
     const queryEngine = new ComunicaEngine( URL, { headers: { "Accept": "text/html" } } );
+    queryEngine._engine.invalidateHttpCache();
     const path = new PathFactory({ context, queryEngine });
     const businesses = [];
     const allBusinessQ = queryEngine.execute(`SELECT ?business WHERE { ?business a <http://schema.org/LocalBusiness>. }` );
