@@ -6,6 +6,12 @@ import ComunicaEngine from '@ldflex/comunica';
 import { namedNode } from '@rdfjs/data-model';
 
 app.get('/triples', async function( req, res ) {
+  if( !req.query.url ) {
+    res
+      .status(500)
+      .send( JSON.stringify({ status: 400, message: "url query param not found in request" }));
+    return;
+  }
   const URL = req.query.url;
   try {
     let quadArray = [];
@@ -36,6 +42,12 @@ app.get('/triples', async function( req, res ) {
 } );
 
 app.get('/business', async function( req, res ) {
+  if( !req.query.url ) {
+    res
+      .status(500)
+      .send( JSON.stringify({ status: 400, message: "url query param not found in request" }) );
+    return;
+  }
   try {
     const URL = req.query.url;
 
