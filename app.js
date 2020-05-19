@@ -41,6 +41,7 @@ async function createBusinessInstance( uri, pathFactory ) {
   result.description = extractValue(await business.description);
   result.url = extractValue(await business.url);
   result.email = extractValue(await business.email);
+  result.image = extractValue(await business.image);
   result.telephone = extractValue(await business.telephone);
   result.uri = extractValue( uri );
 
