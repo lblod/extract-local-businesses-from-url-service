@@ -5,6 +5,104 @@ import { PathFactory } from 'ldflex';
 import ComunicaEngine from '@ldflex/comunica';
 import { namedNode } from '@rdfjs/data-model';
 
+/**
+ * Extract the value from a literal.
+ *
+ * @param entity [NamedNode] Entity for which the value property will
+ * be extracted.
+ */
+function extractValue( entity ) {
+  return entity && entity.value;
+}
+
+/**
+ * Context for understanding the published model.
+ */
+const context = {
+  "@context": {
+    "@vocab": "http://schema.org/",
+    "type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+  }
+};
+
+/**
+ * Create a single business instance by querying the store.
+ *
+ * @param uri [NamedNode] A NamedNode containing the business
+ * subject URI.
+ * @return A simple result object with a business description
+ */
+async function createBusinessInstance( uri, pathFactory ) {
+  const result = {};
+
+  const business = pathFactory.create({ subject: uri });
+
+  result.name = extractValue(await business.name);
+  result.description = extractValue(await business.description);
+  result.url = extractValue(await business.url);
+  result.email = extractValue(await business.email);
+  result.telephone = extractValue(await business.telephone);
+  result.uri = extractValue( uri );
+
+  result.location = await createBusinessLocation( business );
+  result.openingHoursSpecification = await createBusinessOpeningHoursSpecifications( business );
+
+  const types = [];
+  for await (const type of business.type) {
+    types.push( extractValue( await type ) );
+  }
+
+  result.types = types;
+
+  return result;
+}
+
+/**
+ * Creates the location for a business by querying the store.
+ *
+ * @param business [Object] The instance yielded by ldflex for
+ * fetching instances.
+ *
+ * @return Object JSON object which contains the location
+ * specification.
+ */
+async function createBusinessLocation( business ) {
+  const location = {};
+
+  location.streetAddress = extractValue( await business.location.streetAddress );
+  location.postalCode = extractValue( await business.location.postalCode );
+  location.city = extractValue( await business.location.city );
+  location.country = extractValue( await business.location.country );
+  location.uri = extractValue( await business.location );
+
+  return location;
+}
+
+async function createBusinessOpeningHoursSpecifications( business ) {
+  const specifications = [];
+
+  for await (const openingHours of business.openingHoursSpecification) {
+    const baseOpening = {
+      uri: extractValue( openingHours ),
+      opens: extractValue( await openingHours.opens ),
+      closes: extractValue( await openingHours.closes ),
+      validFrom: extractValue( await openingHours.validFrom ),
+      validThrough: extractValue( await openingHours.validThrough ),
+    };
+    if( extractValue( await openingHours.dayOfWeek ) ){
+      baseOpening["dayOfWeek"] = {
+        uri: extractValue( await openingHours.dayOfWeek ),
+        name: extractValue( await openingHours.dayOfWeek.name ),
+        position: extractValue( await openingHours.dayOfWeek.position )
+      };
+    }
+    specifications.push( baseOpening );
+  }
+
+  return specifications;
+}
+
+
 app.get('/triples', async function( req, res ) {
   if( !req.query.url ) {
     res
@@ -50,49 +148,15 @@ app.get('/business', async function( req, res ) {
   }
   try {
     const URL = req.query.url;
-
-    const context = {
-      "@context": {
-        "@vocab": "http://schema.org/"
-      }
-    };
-
     const queryEngine = new ComunicaEngine( URL, { headers: { "Accept": "text/html" } } );
-
+    const path = new PathFactory({ context, queryEngine });
     const businesses = [];
     const allBusinessQ = queryEngine.execute(`SELECT ?business WHERE { ?business a <http://schema.org/LocalBusiness>. }` );
-
-    /**
-     * Create a single business instance by querying the store.
-     *
-     * @param uri [NamedNode] A NamedNode containing the business
-     * subject URI.
-     * @return A simple result object with a business description
-     */
-    const createBusinessInstance = async function( uri ) {
-      const result = {};
-
-      const path = new PathFactory({ context, queryEngine });
-      const business = path.create({ subject: uri });
-
-      result.name = await business.name;
-      result.name = result.name ? result.name.value : result.name;
-      result.description = await business.description;
-      result.description = result.description ? result.description.value : result.description;
-      result.url = await business.url;
-      result.url = result.url ? result.url.value : result.url;
-      result.email = await business.email;
-      result.email = result.email ? result.email.value : result.email;
-      result.telephone = await business.telephone;
-      result.telephone = result.telephone ? result.telephone.value : result.telephone;
-
-      return result;
-    };
 
     for await (const bindings of allBusinessQ) {
       const uri = bindings.get("?business");
       businesses.push(
-        await createBusinessInstance( uri )
+        await createBusinessInstance( uri, path  )
       );
     }
 
