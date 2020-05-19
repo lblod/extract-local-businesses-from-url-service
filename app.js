@@ -71,7 +71,7 @@ async function createBusinessLocation( business ) {
 
   location.streetAddress = extractValue( await business.location.streetAddress );
   location.postalCode = extractValue( await business.location.postalCode );
-  location.city = extractValue( await business.location.city );
+  location.city = extractValue( await business.location.addressLocality );
   location.country = extractValue( await business.location.country );
   location.uri = extractValue( await business.location );
 
