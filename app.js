@@ -142,7 +142,7 @@ app.get('/triples', async function( req, res ) {
 app.get('/business', async function( req, res ) {
   if( !req.query.url ) {
     res
-      .status(500)
+      .status(400)
       .send( JSON.stringify({ status: 400, message: "url query param not found in request" }) );
     return;
   }
