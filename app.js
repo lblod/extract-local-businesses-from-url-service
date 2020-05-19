@@ -45,7 +45,7 @@ async function createBusinessInstance( uri, pathFactory ) {
   result.uri = extractValue( uri );
 
   result.location = await createBusinessLocation( business );
-  result.openingHoursSpecification = await createBusinessOpeningHoursSpecifications( business );
+  result.openingHoursSpecifications = await createBusinessOpeningHoursSpecifications( business );
 
   const types = [];
   for await (const type of business.type) {
