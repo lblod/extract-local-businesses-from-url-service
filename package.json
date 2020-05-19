@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/lblod/extract-rdf-from-remote-service#readme",
   "dependencies": {
+    "@ldflex/comunica": "^3.3.0",
+    "ldflex": "^2.8.0",
     "rdf-dereference": "^1.5.0"
   }
 }
