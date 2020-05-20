@@ -35,26 +35,34 @@ const context = {
 async function createBusinessInstance( uri, pathFactory ) {
   const result = {};
 
-  const business = pathFactory.create({ subject: uri });
+  try {
+    const business = pathFactory.create({ subject: uri });
 
-  result.name = extractValue(await business.name);
-  result.description = extractValue(await business.description);
-  result.url = extractValue(await business.url);
-  result.email = extractValue(await business.email);
-  result.image = extractValue(await business.image);
-  result.telephone = extractValue(await business.telephone);
-  result.uri = extractValue( uri );
+    result.name = extractValue(await business.name);
+    result.description = extractValue(await business.description);
+    result.url = extractValue(await business.url);
+    result.email = extractValue(await business.email);
+    result.image = extractValue(await business.image);
+    result.telephone = extractValue(await business.telephone);
+    result.uri = extractValue( uri );
 
-  result.location = await createBusinessLocation( business );
-  result.openingHoursSpecifications = await createBusinessOpeningHoursSpecifications( business );
+    result.location = await createBusinessLocation( business );
+    result.openingHoursSpecifications = await createBusinessOpeningHoursSpecifications( business );
 
-  const types = [];
-  for await (const type of business.type) {
-    types.push( extractValue( await type ) );
+    const types = [];
+    for await (const type of business.type) {
+      types.push( extractValue( await type ) );
+    }
+
+    result.types = types;
+  } catch (e) {
+    try {
+      console.error("An error occurred whilst creating business for uri", uri, uri.value);
+    } catch (e) {
+      console.error("An error occurred whilst creating business for uri");
+    }
   }
-
-  result.types = types;
-
+  
   return result;
 }
 
@@ -70,36 +78,43 @@ async function createBusinessInstance( uri, pathFactory ) {
 async function createBusinessLocation( business ) {
   const location = {};
 
-  location.streetAddress = extractValue( await business.address.streetAddress );
-  location.postalCode = extractValue( await business.address.postalCode );
-  location.city = extractValue( await business.address.addressLocality );
-  location.country = extractValue( await business.address.country );
-  location.uri = extractValue( await business.address );
-
+  try {
+    location.streetAddress = extractValue( await business.address.streetAddress );
+    location.postalCode = extractValue( await business.address.postalCode );
+    location.city = extractValue( await business.address.addressLocality );
+    location.country = extractValue( await business.address.country );
+    location.uri = extractValue( await business.address );
+  } catch (e) {
+    console.error("An error occurred whilst creating location for business");
+  }
+  
   return location;
 }
 
 async function createBusinessOpeningHoursSpecifications( business ) {
   const specifications = [];
 
-  for await (const openingHours of business.openingHoursSpecification) {
-    const baseOpening = {
-      uri: extractValue( openingHours ),
-      opens: extractValue( await openingHours.opens ),
-      closes: extractValue( await openingHours.closes ),
-      validFrom: extractValue( await openingHours.validFrom ),
-      validThrough: extractValue( await openingHours.validThrough ),
-    };
-    if( extractValue( await openingHours.dayOfWeek ) ){
-      baseOpening["dayOfWeek"] = {
-        uri: extractValue( await openingHours.dayOfWeek ),
-        name: extractValue( await openingHours.dayOfWeek.name ),
-        position: extractValue( await openingHours.dayOfWeek.position )
+  try {
+    for await (const openingHours of business.openingHoursSpecification) {
+      const baseOpening = {
+        uri: extractValue( openingHours ),
+        opens: extractValue( await openingHours.opens ),
+        closes: extractValue( await openingHours.closes ),
+        validFrom: extractValue( await openingHours.validFrom ),
+        validThrough: extractValue( await openingHours.validThrough ),
       };
+      if( extractValue( await openingHours.dayOfWeek ) ){
+        baseOpening["dayOfWeek"] = {
+          uri: extractValue( await openingHours.dayOfWeek ),
+          name: extractValue( await openingHours.dayOfWeek.name ),
+          position: extractValue( await openingHours.dayOfWeek.position )
+        };
+      }
+      specifications.push( baseOpening );
     }
-    specifications.push( baseOpening );
+  } catch (e) {
+    console.error("Could not create openhours specification");
   }
-
   return specifications;
 }
 
