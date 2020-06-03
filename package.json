@@ -1,6 +1,6 @@
 {
   "name": "extract-rdf-from-remote-service",
-  "version": "0.0.1",
+  "version": "0.3.1",
   "description": "Extracts RDF from a remote source and returns it",
   "main": "app.js",
   "scripts": {
